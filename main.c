@@ -5,6 +5,8 @@
 #include "thread.h"
 #include "list.h"
 
+#include "_time.h"
+
 #define USAGE "usage: ./sort [thread_count] [input_count]\n"
 
 struct {
@@ -162,6 +164,10 @@ int main(int argc, char const *argv[])
         list_add(the_list, data);
     }
 
+    /*cal time*/
+    struct timespec start, end;
+    gettime(&start);
+
     /* initialize and execute tasks from thread pool */
     pthread_mutex_init(&(thread_data.mutex), NULL);
     thread_data.cuthread_count = 0;
@@ -177,5 +183,8 @@ int main(int argc, char const *argv[])
 
     /* release thread pool */
     tpool_free(pool);
+
+    gettime(&end);
+    printf("mergesort for %d data with %d threads take %ld us\n", data_count, thread_count, diff_in_us(start, end));
     return 0;
 }
