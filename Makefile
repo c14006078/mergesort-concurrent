@@ -7,6 +7,13 @@ ifeq ($(strip $(TIMING)),1)
 CFLAGS += -DTIMING
 endif
 
+##benchmark argument
+TEST_SET=( 1 2 4 8 16 )
+#TEST_NUM=${#TEST_SET[@]}
+TEST_NUM=5
+TEST_DATA_NUM=10000
+
+
 .PHONY: all clean test git-hook astyle
 
 all: sort
@@ -17,6 +24,12 @@ deps := $(OBJS:%.o=.%.o.d)
 
 sort: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) -rdynamic
+
+benchmark-time:
+	bash scripts/$@.bash
+
+benchmark-lock:
+	bash scripts/$@.bash
 
 git-hook:
 	sh scripts/install-git-hooks
