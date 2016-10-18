@@ -47,6 +47,7 @@ node_t *list_get(llist_t *the_list, uint32_t index)
 
 void list_print(llist_t *the_list)
 {
+#ifndef TIMING
     node_t *cur = the_list->head;
     /* FIXME: we have to validate the sorted results in advance. */
     printf("\nsorted results:\n");
@@ -55,4 +56,5 @@ void list_print(llist_t *the_list)
         cur = cur->next;
     }
     printf("\n");
+#endif
 }

@@ -157,12 +157,18 @@ int main(int argc, char const *argv[])
     /* FIXME: remove all all occurrences of printf and scanf
      * in favor of automated test flow.
      */
+#ifdef TIMING
+    srand(time(NULL));
+    for(int i = 0; i < data_count; ++i)
+        list_add(the_list, rand());//FIXME: rand only return `int`, we want `long int`
+#else
     printf("input unsorted data line-by-line\n");
     for (int i = 0; i < data_count; ++i) {
         long int data;
         scanf("%ld", &data);
         list_add(the_list, data);
     }
+#endif
 
     /*cal time*/
     struct timespec start, end;

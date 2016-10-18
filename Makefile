@@ -2,6 +2,11 @@ CC = gcc
 CFLAGS = -std=gnu99 -Wall -g -pthread
 OBJS = list.o thread.o main.o
 
+#TIMING flag for only show execution time
+ifeq ($(strip $(TIMING)),1)
+CFLAGS += -DTIMING
+endif
+
 .PHONY: all clean test git-hook astyle
 
 all: sort
