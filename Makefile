@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -std=gnu99 -Wall -g -pthread
 OBJS = list.o thread.o main.o
 
-.PHONY: all clean test
+.PHONY: all clean test git-hook
 
 all: sort
 
@@ -12,6 +12,9 @@ deps := $(OBJS:%.o=.%.o.d)
 
 sort: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) -rdynamic
+
+git-hook:
+	sh scripts/install-git-hooks
 
 clean:
 	rm -f $(OBJS) sort
