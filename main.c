@@ -172,7 +172,7 @@ int main(int argc, char const *argv[])
 
     /*cal time*/
     struct timespec start, end;
-    gettime(&start);
+    //gettime(&start);
 
     /* initialize and execute tasks from thread pool */
     pthread_mutex_init(&(thread_data.mutex), NULL);
@@ -185,6 +185,7 @@ int main(int argc, char const *argv[])
     task_t *new_task = (task_t *) malloc(sizeof(task_t));
     new_task->func = cut;
     new_task->arg = the_list;
+    gettime(&start);//
     tqueue_push(pool->queue, new_task);
 
     /* release thread pool */
