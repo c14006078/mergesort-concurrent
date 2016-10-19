@@ -11,12 +11,10 @@
 #define USAGE "usage: ./sort [thread_count] [input_count]\n"
 
 struct {
-    //pthread_mutex_t mutex;
     _Atomic int cuthread_count;
 } thread_data;
 
 struct {
-    //pthread_mutex_t mutex;//FIXME: No use in code
     llist_t * _Atomic list;
 } tmp_list;
 
@@ -70,14 +68,11 @@ void merge(void *data)
 {
     llist_t *list = (llist_t *) data;
     if (list->size < data_count) {
-        //pthread_mutex_lock(&(thread_data.mutex));FIXME:No need lock
         llist_t * _Atomic tmpLocal = tmp_list.list;
         if (!tmpLocal) {
             tmp_list.list = list;
-            //pthread_mutex_unlock(&(thread_data.mutex));
         } else {
             tmp_list.list = NULL;
-            //pthread_mutex_unlock(&(thread_data.mutex));
             task_t *new_task = (task_t *) malloc(sizeof(task_t));
             new_task->func = merge;
             new_task->arg = merge_list(list, tmpLocal);
@@ -95,11 +90,9 @@ void merge(void *data)
 void cut(void *data)
 {
     llist_t *list = (llist_t *) data;
-    //pthread_mutex_lock(&(thread_data.mutex));
     int cutLocal = thread_data.cuthread_count;
     if (list->size > 1 && cutLocal < max_cut) {
-        thread_data.cuthread_count++;//++i no effect for _Atomic var
-        //pthread_mutex_unlock(&(thread_data.mutex));
+        thread_data.cuthread_count++;///++i no effect for _Atomic var
         /* Cut list */
         int mid = list->size / 2;
         llist_t *newlist = list_new();
@@ -118,7 +111,6 @@ void cut(void *data)
         new_task->arg = list;
         tqueue_push(pool->queue, new_task);
     } else {
-        //pthread_mutex_unlock(&(thread_data.mutex));
         merge(merge_sort(list));
     }
 }
@@ -158,9 +150,6 @@ int main(int argc, char const *argv[])
     /* Read data */
     the_list = list_new();
 
-    /* FIXME: remove all all occurrences of printf and scanf
-     * in favor of automated test flow.
-     */
 #ifdef TIMING
     srand(time(NULL));
     for(int i = 0; i < data_count; ++i)
@@ -179,9 +168,8 @@ int main(int argc, char const *argv[])
     //gettime(&start);
 
     /* initialize and execute tasks from thread pool */
-    //pthread_mutex_init(&(thread_data.mutex), NULL);
     thread_data.cuthread_count = ATOMIC_VAR_INIT(0);
-    tmp_list.list = NULL;//ATOMIC_VAL_INIT(NULL);
+    tmp_list.list = NULL;//ATOMIC_VAL_INIT(NULL); <Failt>
     pool = (tpool_t *) malloc(sizeof(tpool_t));
     tpool_init(pool, thread_count, task_run);
 
