@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdatomic.h>
 
 #include "thread.h"
 #include "list.h"
@@ -10,12 +11,12 @@
 #define USAGE "usage: ./sort [thread_count] [input_count]\n"
 
 struct {
-    pthread_mutex_t mutex;
-    int cuthread_count;
+    //pthread_mutex_t mutex;
+    _Atomic int cuthread_count;
 } thread_data;
 
 struct {
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex;//FIXME: No use in code
     llist_t *list;
 } tmp_list;
 
@@ -69,14 +70,14 @@ void merge(void *data)
 {
     llist_t *list = (llist_t *) data;
     if (list->size < data_count) {
-        pthread_mutex_lock(&(thread_data.mutex));
+        //pthread_mutex_lock(&(thread_data.mutex));FIXME:No need lock
         llist_t *tmpLocal = tmp_list.list;
         if (!tmpLocal) {
             tmp_list.list = list;
-            pthread_mutex_unlock(&(thread_data.mutex));
+            //pthread_mutex_unlock(&(thread_data.mutex));
         } else {
             tmp_list.list = NULL;
-            pthread_mutex_unlock(&(thread_data.mutex));
+            //pthread_mutex_unlock(&(thread_data.mutex));
             task_t *new_task = (task_t *) malloc(sizeof(task_t));
             new_task->func = merge;
             new_task->arg = merge_list(list, tmpLocal);
@@ -94,11 +95,11 @@ void merge(void *data)
 void cut(void *data)
 {
     llist_t *list = (llist_t *) data;
-    pthread_mutex_lock(&(thread_data.mutex));
+    //pthread_mutex_lock(&(thread_data.mutex));
     int cutLocal = thread_data.cuthread_count;
     if (list->size > 1 && cutLocal < max_cut) {
-        ++thread_data.cuthread_count;
-        pthread_mutex_unlock(&(thread_data.mutex));
+        thread_data.cuthread_count++;//++i no effect for _Atomic var
+        //pthread_mutex_unlock(&(thread_data.mutex));
         /* Cut list */
         int mid = list->size / 2;
         llist_t *newlist = list_new();
@@ -117,19 +118,22 @@ void cut(void *data)
         new_task->arg = list;
         tqueue_push(pool->queue, new_task);
     } else {
-        pthread_mutex_unlock(&(thread_data.mutex));
+        //pthread_mutex_unlock(&(thread_data.mutex));
         merge(merge_sort(list));
     }
 }
 
+/**
+ * pop the queue for task to run
+ */
 static void *task_run(void *data)
 {
     task_t *current_task = NULL;
     while (1) {
         current_task = tqueue_pop(pool->queue);
         if (current_task) {
-            if (!current_task->func) {
-                tqueue_push(pool->queue, current_task);
+            if (!current_task->func) {///no task
+                tqueue_push(pool->queue, current_task);///task push
                 break;
             } else {
                 current_task->func(current_task->arg);
@@ -175,8 +179,8 @@ int main(int argc, char const *argv[])
     //gettime(&start);
 
     /* initialize and execute tasks from thread pool */
-    pthread_mutex_init(&(thread_data.mutex), NULL);
-    thread_data.cuthread_count = 0;
+    //pthread_mutex_init(&(thread_data.mutex), NULL);
+    thread_data.cuthread_count = ATOMIC_VAR_INIT(0);
     tmp_list.list = NULL;
     pool = (tpool_t *) malloc(sizeof(tpool_t));
     tpool_init(pool, thread_count, task_run);
