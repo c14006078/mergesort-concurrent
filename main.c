@@ -16,8 +16,8 @@ struct {
 } thread_data;
 
 struct {
-    pthread_mutex_t mutex;//FIXME: No use in code
-    llist_t *list;
+    //pthread_mutex_t mutex;//FIXME: No use in code
+    llist_t * _Atomic list;
 } tmp_list;
 
 static llist_t *the_list = NULL;
@@ -71,7 +71,7 @@ void merge(void *data)
     llist_t *list = (llist_t *) data;
     if (list->size < data_count) {
         //pthread_mutex_lock(&(thread_data.mutex));FIXME:No need lock
-        llist_t *tmpLocal = tmp_list.list;
+        llist_t * _Atomic tmpLocal = tmp_list.list;
         if (!tmpLocal) {
             tmp_list.list = list;
             //pthread_mutex_unlock(&(thread_data.mutex));
@@ -181,7 +181,7 @@ int main(int argc, char const *argv[])
     /* initialize and execute tasks from thread pool */
     //pthread_mutex_init(&(thread_data.mutex), NULL);
     thread_data.cuthread_count = ATOMIC_VAR_INIT(0);
-    tmp_list.list = NULL;
+    tmp_list.list = NULL;//ATOMIC_VAL_INIT(NULL);
     pool = (tpool_t *) malloc(sizeof(tpool_t));
     tpool_init(pool, thread_count, task_run);
 
