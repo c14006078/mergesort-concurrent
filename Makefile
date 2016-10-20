@@ -30,6 +30,8 @@ benchmark-time:
 
 benchmark-lock:
 	bash scripts/$@.bash
+benchmark-cache-miss:
+	bash scripts/$@.bash
 
 git-hook:
 	sh scripts/install-git-hooks
