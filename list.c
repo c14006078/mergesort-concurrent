@@ -1,5 +1,8 @@
 #include "list.h"
 
+/**
+ * new node with assignment and let it be the header of this list
+ */
 node_t *new_node(val_t val, node_t *next)
 {
     /* allocate node */
@@ -9,6 +12,9 @@ node_t *new_node(val_t val, node_t *next)
     return node;
 }
 
+/**
+ * init list without assignmend
+ */
 llist_t *list_new()
 {
     /* allocate list */
@@ -18,7 +24,7 @@ llist_t *list_new()
     return the_list;
 }
 
-/*
+/**
  * list_add inserts a new node with the given value val in the list
  * (if the value was absent) or does nothing (if the value is already present).
  */
@@ -31,7 +37,7 @@ int list_add(llist_t *the_list, val_t val)
     return 0;
 }
 
-/*
+/**
  * get the node specify by index
  * if the index is out of range, it will return NULL
  */
@@ -45,6 +51,9 @@ node_t *list_get(llist_t *the_list, uint32_t index)
     return head;
 }
 
+/**
+ * print list node context
+ */
 void list_print(llist_t *the_list)
 {
 #ifndef TIMING
