@@ -26,12 +26,15 @@ uint32_t tqueue_size(tqueue_t *the_queue);
 int tqueue_push(tqueue_t *the_queue, task_t *task);
 int tqueue_free(tqueue_t *the_queue);
 
+
 typedef struct {
     pthread_t *threads;
     uint32_t count;
-    tqueue_t *queue;
+    tqueue_t **queue;
+	pthread_t *disthread;
+	tqueue_t *disqueue;
 } tpool_t;
-
+void *dispatch(void *data);
 int tpool_init(tpool_t *the_pool, uint32_t count, void *(*func)(void *));
 int tpool_free(tpool_t *the_pool);
 

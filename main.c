@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include "thread.h"
 #include "list.h"
 
@@ -80,13 +79,13 @@ void merge(void *data)
             task_t *new_task = (task_t *) malloc(sizeof(task_t));
             new_task->func = merge;
             new_task->arg = merge_list(list, tmpLocal);
-            tqueue_push(pool->queue, new_task);
+            tqueue_push(pool->disqueue, new_task);
         }
     } else {
         the_list = list;
         task_t *new_task = (task_t *) malloc(sizeof(task_t));
         new_task->func = NULL;
-        tqueue_push(pool->queue, new_task);
+        tqueue_push(pool->disqueue, new_task);
         list_print(list);
     }
 }
@@ -111,11 +110,11 @@ void cut(void *data)
         task_t *new_task = (task_t *) malloc(sizeof(task_t));
         new_task->func = cut;
         new_task->arg = newlist;
-        tqueue_push(pool->queue, new_task);
+        tqueue_push(pool->disqueue, new_task);
         new_task = (task_t *) malloc(sizeof(task_t));
         new_task->func = cut;
         new_task->arg = list;
-        tqueue_push(pool->queue, new_task);
+        tqueue_push(pool->disqueue, new_task);
     } else {
         pthread_mutex_unlock(&(thread_data.mutex));
         merge(merge_sort(list));
@@ -124,12 +123,15 @@ void cut(void *data)
 
 static void *task_run(void *data)
 {
+	
+
+	tqueue_t * myqueue = (tqueue_t *) data;
     task_t *current_task = NULL;
     while (1) {
-        current_task = tqueue_pop(pool->queue);
+        current_task = tqueue_pop(myqueue);
         if (current_task) {
             if (!current_task->func) {
-                tqueue_push(pool->queue, current_task);
+                tqueue_push(pool->disqueue, current_task);
                 break;
             } else {
                 current_task->func(current_task->arg);
@@ -142,6 +144,7 @@ static void *task_run(void *data)
 
 int main(int argc, char const *argv[])
 {
+	
     if (argc < 3) {
         printf(USAGE);
         return -1;
@@ -180,13 +183,12 @@ int main(int argc, char const *argv[])
     tmp_list.list = NULL;
     pool = (tpool_t *) malloc(sizeof(tpool_t));
     tpool_init(pool, thread_count, task_run);
-
-    /* launch the first task */
+	/* launch the first task */
     task_t *new_task = (task_t *) malloc(sizeof(task_t));
     new_task->func = cut;
     new_task->arg = the_list;
     gettime(&start);//
-    tqueue_push(pool->queue, new_task);
+    tqueue_push(pool->disqueue, new_task);
 
     /* release thread pool */
     tpool_free(pool);
